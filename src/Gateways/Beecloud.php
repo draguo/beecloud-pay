@@ -6,11 +6,13 @@ use Draguo\Pay\Contracts\PayInterface;
 use Draguo\Pay\Exceptions\GatewayException;
 use Draguo\Pay\Supports\Config;
 use beecloud\rest\api as PayService;
+use Symfony\Component\HttpFoundation\Request;
 
 class Beecloud implements PayInterface
 {
     protected $config;
     protected $params;
+    protected $request;
 
     public function __construct(Config $config)
     {
@@ -38,6 +40,32 @@ class Beecloud implements PayInterface
     public function refund($order)
     {
         // TODO: Implement refund() method.
+    }
+
+    public function verify()
+    {
+        $request = Request::createFromGlobals();
+        $this->request = $request;
+
+        $data = $request->request->count() > 0 ? $request->request->all() : $request->query->all();
+        if ($this->isJson()) {
+            $data = ((array) json_decode($request->getContent(), true));
+        }
+
+        $checkParams[] = $this->config['id'];
+        foreach (['transaction_id', 'transaction_type', 'channel_type', 'transaction_fee'] as $key) {
+            array_push($checkParams, $data[$key]);
+        }
+        array_push($checkParams, $this->config->get('master_secret'));
+        if (md5(implode('', $checkParams)) != $data['signature']) {
+            throw new \Exception('签名出错');
+        }
+        return true;
+    }
+
+    protected function isJson()
+    {
+        return mb_strpos($this->request->headers->get('content-type'), 'json');
     }
 
     public function scan($order)

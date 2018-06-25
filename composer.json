@@ -2,7 +2,8 @@
     "name": "draguo/pay",
     "description": "pay wechat alipay unionpay",
     "require": {
-        "beecloud.cn/rest": "^2.3"
+        "beecloud.cn/rest": "^2.3",
+        "symfony/http-foundation": "^3.0|^4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~6.0"
