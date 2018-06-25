@@ -18,7 +18,9 @@ class Pay
 
     protected function create($method)
     {
-        if (in_array(strtoupper($method), ['WX_NATIVE','ALI_WEB'])) {
+        // 由 beecloud 处理的渠道
+        $beecloud_support = 'WX_NATIVE,ALI_WEB,WX,ALI';
+        if (strpos($beecloud_support, strtoupper($method)) !== false) {
             $this->config->set('pay_channel', $method);
             $method = 'Beecloud';
         }

@@ -26,7 +26,6 @@ class Beecloud implements PayInterface
         $this->params = [
             'timestamp' => time() * 1000,
             'channel' => $config->get('pay_channel'),
-            'title' => '订单支付',   //订单标题
             'qr_pay_mode' => "3", // 说明文档 https://beecloud.cn/doc/?sdk=php#1-2-2
             'bill_timeout' => 60, //京东(JD*)不支持该参数
         ];
@@ -39,7 +38,15 @@ class Beecloud implements PayInterface
 
     public function refund($order)
     {
-        // TODO: Implement refund() method.
+        $order['bill_no'] = $order['trade_no'];
+        unset($order['trade_no']);
+        // 可通过传入覆盖默认
+        $data = array_merge($this->params, $order);
+        $result = PayService::refund($data);
+        if ($result->result_code != 0) {
+            throw new GatewayException($result->err_detail, $result->result_code);
+        }
+        return $result;
     }
 
     public function verify()
@@ -73,6 +80,7 @@ class Beecloud implements PayInterface
         $order['bill_no'] = $order['trade_no'];
         unset($order['trade_no']);
         $order['total_fee'] = (int)$order['total_fee'];
+        $order['title'] = '订单支付';
         // 可通过传入覆盖默认
         $params = array_merge($this->params, $order);
         try{
