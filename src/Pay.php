@@ -10,6 +10,7 @@ class Pay
      * @var Config $config
      */
     protected $config;
+    protected $pay_channel;
 
     public function __construct(array $config)
     {
@@ -18,20 +19,7 @@ class Pay
 
     protected function create($method)
     {
-        // 由 beecloud 处理的渠道
-        $beecloud_support = 'WX_NATIVE,ALI_WEB,WX,ALI';
-        if (strpos($beecloud_support, strtoupper($method)) !== false) {
-            $this->config->set('pay_channel', $method);
-            $method = 'Beecloud';
-        }
-        // 由银联处理的渠道
-        $unionpay_support = 'B2B';
-        if (strpos($unionpay_support, strtoupper($method)) !== false) {
-            $this->config->set('pay_channel', $method);
-            $method = 'Unionpay';
-        }
-        $gateway = __NAMESPACE__ . '\\Gateways\\' . ucwords(str_replace(['-', '_'], ' ', $method));
-
+        $gateway = __NAMESPACE__ . '\\Gateways\\' . str_replace(' ', '',ucwords(str_replace(['-', '_'], ' ', $method)));
         if (class_exists($gateway)) {
             return new $gateway($this->config);
         }

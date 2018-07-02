@@ -3,6 +3,7 @@
 namespace Draguo\Pay\Gateways;
 
 use Draguo\Pay\Contracts\PayInterface;
+use Draguo\Pay\Contracts\txn_time;
 use Draguo\Pay\Exceptions\GatewayException;
 use Draguo\Pay\Supports\Config;
 use beecloud\rest\api as PayService;
@@ -10,13 +11,16 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Beecloud implements PayInterface
 {
+    const SUPPORT_CHANNEL = 'WX_NATIVE,ALI_WEB,WX,ALI';
+
     protected $config;
     protected $params;
     protected $request;
+    protected $channel;
 
     public function __construct(Config $config)
     {
-        $this->config = $config->get('beecloud');
+        $this->config = new Config($config->get('beecloud'));
         list($appId, $app_secret, $master_secret, $test_secret) =
             array_values($this->config->only(['id', 'secret', 'master_secret', 'test_secret']));
         PayService::registerApp($appId, $app_secret, $master_secret, $test_secret);
@@ -25,7 +29,6 @@ class Beecloud implements PayInterface
         }
         $this->params = [
             'timestamp' => time() * 1000,
-            'channel' => $config->get('pay_channel'),
             'qr_pay_mode' => "3", // 说明文档 https://beecloud.cn/doc/?sdk=php#1-2-2
             'bill_timeout' => 60, //京东(JD*)不支持该参数
         ];
@@ -33,7 +36,30 @@ class Beecloud implements PayInterface
 
     public function pay($order)
     {
-        // TODO: Implement pay() method.
+        $order['bill_no'] = $order['trade_no'];
+        unset($order['trade_no']);
+        $order['total_fee'] = (int)$order['total_fee'];
+        $order['title'] = '订单支付';
+        $order['channel'] = $this->channel;
+        // 可通过传入覆盖默认
+        $params = array_merge($this->params, $order);
+        try{
+            $result = PayService::bill($params);
+            if ($result->result_code != 0) {
+                throw new GatewayException($result->err_detail);
+            }
+            return $result;
+        } catch (\Exception $exception) {
+            throw new GatewayException($exception->getMessage());
+        }
+    }
+
+    public function find($trade_no, $txn_time = null)
+    {
+        return PayService::bills([
+            'bill_no' => (string)$trade_no,
+            'channel' => $this->channel,
+        ]);
     }
 
     public function refund($order)
@@ -75,22 +101,4 @@ class Beecloud implements PayInterface
         return mb_strpos($this->request->headers->get('content-type'), 'json');
     }
 
-    public function scan($order)
-    {
-        $order['bill_no'] = $order['trade_no'];
-        unset($order['trade_no']);
-        $order['total_fee'] = (int)$order['total_fee'];
-        $order['title'] = '订单支付';
-        // 可通过传入覆盖默认
-        $params = array_merge($this->params, $order);
-        try{
-            $result = PayService::bill($params);
-            if ($result->result_code != 0) {
-                throw new GatewayException($result->err_detail);
-            }
-            return $result;
-        } catch (\Exception $exception) {
-            throw new GatewayException($exception->getMessage());
-        }
-    }
 }

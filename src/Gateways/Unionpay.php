@@ -17,7 +17,7 @@ class Unionpay implements PayInterface
     use HttpRequest;
 
     const VERSION = '5.1.0';
-    const SIGN_METHOD = '01';
+    const SIGN_METHOD = '01'; // 采用RSA签名
     const API_PREFIX = 'https://gateway.95516.com/gateway/api/';
     const API_TEST_PREFIX = 'https://gateway.test.95516.com/gateway/api/';
 
@@ -28,14 +28,14 @@ class Unionpay implements PayInterface
 
     public function __construct(Config $config)
     {
-        $this->config = $config;
+        $this->config = new Config($config->get('unionpay'));
         $this->params = [
             'version' => self::VERSION,
             'encoding' => 'utf-8',
             'signMethod' => self::SIGN_METHOD,
             'channelType' => '07',  //渠道类型，07-PC，08-手机
-            'accessType' => '0',  //接入类型
-            'merId' => $config->get('mch_id'), //商户代码
+            'accessType' => '0',  //接入类型, 0 普通商户直连接入
+            'merId' => $this->config->get('mch_id'), //商户代码
         ];
     }
 
@@ -53,8 +53,8 @@ class Unionpay implements PayInterface
             'orderId' => $order['trade_no'],
             'txnTime' => $order['txn_time'], //订单发送时间，格式为YYYYMMDDhhmmss，取北京时间
             //'issInsCode' => 'ABC',  //发卡机构代码，直接跳转到银行网银的形式
+            'payTimeout' => strtotime("+{$order['bill_timeout']} minutes", $order['txn_time']),
         ];
-
         $this->params = array_merge($this->params, $add);
         $this->params['signature'] = $this->signature($this->params);
         return $this->createAutoFormHtml($this->params, $this->getEndpoint('frontTransReq.do'));
@@ -107,6 +107,10 @@ class Unionpay implements PayInterface
             return self::API_TEST_PREFIX . $uri;
         }
         return self::API_PREFIX . $uri;
+    }
+
+    public function verify(){
+        // todo
     }
     // rsa 签名方式
     protected function signature($params)
