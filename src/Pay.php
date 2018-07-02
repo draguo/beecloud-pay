@@ -24,7 +24,12 @@ class Pay
             $this->config->set('pay_channel', $method);
             $method = 'Beecloud';
         }
-
+        // 由银联处理的渠道
+        $unionpay_support = 'B2B';
+        if (strpos($unionpay_support, strtoupper($method)) !== false) {
+            $this->config->set('pay_channel', $method);
+            $method = 'Unionpay';
+        }
         $gateway = __NAMESPACE__ . '\\Gateways\\' . ucwords(str_replace(['-', '_'], ' ', $method));
 
         if (class_exists($gateway)) {

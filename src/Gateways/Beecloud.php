@@ -16,7 +16,7 @@ class Beecloud implements PayInterface
 
     public function __construct(Config $config)
     {
-        $this->config = $config;
+        $this->config = $config->get('beecloud');
         list($appId, $app_secret, $master_secret, $test_secret) =
             array_values($this->config->only(['id', 'secret', 'master_secret', 'test_secret']));
         PayService::registerApp($appId, $app_secret, $master_secret, $test_secret);
