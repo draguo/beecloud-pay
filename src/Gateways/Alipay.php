@@ -16,4 +16,9 @@ class Alipay extends Beecloud
         $this->channel = 'ALI';
         return parent::find($trade_no, $txn_time);
     }
+
+    public function verify()
+    {
+        return parent::verify();
+    }
 }
