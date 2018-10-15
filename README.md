@@ -75,7 +75,9 @@ $order = [
     'txn_time' => '20180628170154', // 下单时间 , 银联需要
     'transaction_id' => '', // 银联渠道必填, 由银联返回
 ]
-$result = Pay::b2b()->refund($order);
+$result = Pay::alipay($config)->refund($order);
+$result = Pay::wechat($config)->refund($order);
+$result = Pay::b2b($config)->refund($order);
 ```
 
 ### 验证签名

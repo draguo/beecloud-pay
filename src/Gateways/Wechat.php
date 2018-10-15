@@ -25,6 +25,13 @@ class Wechat extends Beecloud
         return parent::find($trade_no, $txn_time);
     }
 
+    public function refund($order)
+    {
+        $order['channel'] = 'WX';
+
+        return parent::refund($order);
+    }
+
     public function verify()
     {
         return parent::verify();
