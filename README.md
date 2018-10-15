@@ -41,6 +41,8 @@ $order = [
 
 // 微信二维码
 Pay::wechat($config)->scan($order);
+// 微信小程序
+Pay::wechat($config)->miniapp($order);
 // 支付宝收银台 pc
 Pay::alipay($config)->web($order);
 // 银联 B2B pc
@@ -66,10 +68,13 @@ $pay_channel = 'WX_NATIVE'; // 渠道名，可选项参看下表
 $order = [
     'trade_no' => '20180627181607', // 商家自定义的交易单号
     'refund_fee' => '2000', // 退款金额
-    'txn_time' => '20180628170154', // 下单时间 , 银联需要
     'refund_no' => '201806271816051', // 退款单号
-    'transaction_id' => '', // 银联渠道必填, 由银联返回
 ];
+// 银联额外参数
+[
+    'txn_time' => '20180628170154', // 下单时间 , 银联需要
+    'transaction_id' => '', // 银联渠道必填, 由银联返回
+]
 $result = Pay::b2b()->refund($order);
 ```
 
