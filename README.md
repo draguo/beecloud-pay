@@ -1,10 +1,6 @@
-<div data-type="alignment" data-value="center" style="text-align:center">
-  <h2 id="bn8zcv" data-type="h">
-    <a class="anchor" id="支付" href="#bn8zcv"></a>支付</h2>
-  <div data-type="p"></div>
-</div>
+<h1 align="center">支付 sdk</h1>
 
-支持功能
+依赖 beecloud 实现支付功能
 
 
 ### 配置
