@@ -1,5 +1,5 @@
 {
-    "name": "draguo/pay",
+    "name": "draguo/beecloud-pay",
     "description": "pay wechat alipay unionpay",
     "require": {
         "beecloud.cn/rest": "^2.3",
